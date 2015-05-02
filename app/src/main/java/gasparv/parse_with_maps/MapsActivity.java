@@ -1,13 +1,13 @@
 package gasparv.parse_with_maps;
 
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -48,7 +48,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private ProgressDialog pDialog;
     List<ParseObject> ob;
-    private ArrayList values;
+    private ArrayList Longitudes;
+    private ArrayList Latitudes;
     LocationManager locationManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +86,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
     private void setUpMapIfNeeded() {
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-
+            
         }
     }
 
@@ -204,18 +205,18 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
         @Override
         protected Void doInBackground(Void... params) {
             // Create the array
-            values = new ArrayList<String>();
+            Latitudes = new ArrayList<String>();
+            Longitudes = new ArrayList<String>();
             try {
                 ParseQuery<ParseObject> query = new ParseQuery<ParseObject>(
                         "Posiciones");
 
                 ob = query.find();
                 for (ParseObject dato : ob) {
-
-                    values.add("Latitud: "+dato.get("latitud")+ "\nLongitud: " + dato.get("longitud"));
+                    Latitudes.add(dato.get("latitud"));
+                    Longitudes.add(dato.get("longitud"));
                     Log.i("Latitud: ", dato.get("latitud").toString());
                     Log.i("Longitud: ", dato.get("longitud").toString());
-
                 }
             } catch (ParseException e) {
                 Log.e("Error", e.getMessage());
@@ -223,24 +224,23 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
             }
             return null;
         }
-
         @Override
         protected void onPostExecute(Void result) {
-            // Locate the listview in listview_main.xml
-            // Pass the results into ListViewAdapter.java
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(MapsActivity.this,
-                    android.R.layout.simple_list_item_1, android.R.id.text1, values);
-            PolylineOptions rectOptions = new PolylineOptions()
-                    .add(new LatLng(37.35, -122.0))
-                    .add(new LatLng(37.45, -122.0))  // North of the previous point, but at the same longitude
-                    .add(new LatLng(37.45, -122.2))  // Same latitude, and 30km to the west
-                    .add(new LatLng(37.35, -122.2))  // Same longitude, and 16km to the south
-                    .add(new LatLng(37.35, -122.0)); // Closes the polyline.
-
-// Get back the mutable Polyline
+                    android.R.layout.simple_list_item_1, android.R.id.text1, Latitudes);
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMap();
+            PolylineOptions rectOptions = new PolylineOptions();
+            for(int i=0;i<Longitudes.size();i++)
+            {
+                rectOptions.add(new LatLng(Double.parseDouble(Latitudes.get(i).toString()),Double.parseDouble(Longitudes.get(i).toString())));
+            }
             Polyline polyline = mMap.addPolyline(rectOptions);
-            setUpMapIfNeeded();
-            // Close the progressdialog
+            rectOptions.width(2);
+            rectOptions.color(Color.BLUE);
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(Latitudes.get(0).toString()),Double.parseDouble(Longitudes.get(0).toString()))).zoom(13).build();
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+            mMap.moveCamera(cameraUpdate);
             pDialog.dismiss();
         }
     }
