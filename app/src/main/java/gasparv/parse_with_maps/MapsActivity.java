@@ -67,7 +67,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
         setUpMapIfNeeded();
     }
 
-
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
@@ -186,6 +185,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
 
     }
 
+
     // RemoteDataTask AsyncTask
     private class GetData extends AsyncTask<Void, Void, Void> {
         @Override
@@ -234,10 +234,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
             for(int i=0;i<Longitudes.size();i++)
             {
                 rectOptions.add(new LatLng(Double.parseDouble(Latitudes.get(i).toString()),Double.parseDouble(Longitudes.get(i).toString())));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(Latitudes.get(i).toString()),Double.parseDouble(Longitudes.get(i).toString()))).title("LastMe"));
             }
             Polyline polyline = mMap.addPolyline(rectOptions);
             rectOptions.width(2);
-            rectOptions.color(Color.BLUE);
+            rectOptions.color(Color.GREEN);
             CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(Double.parseDouble(Latitudes.get(0).toString()),Double.parseDouble(Longitudes.get(0).toString()))).zoom(13).build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
             mMap.moveCamera(cameraUpdate);
